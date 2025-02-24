@@ -127,7 +127,11 @@ def check_boba_availability():
             )
             
             # Check if boba is available (not disabled)
-            boba_available = not (input_element.get_attribute("aria-disabled") == "true")
+            boba_available = not (
+                input_element.get_attribute("disabled") is not None or 
+                input_element.get_attribute("aria-disabled") == "true"
+            )
+            # boba_available = False
             
             if boba_available:
                 print("1/2 Boba is available for Pistachio Milk Tea!")
@@ -143,12 +147,15 @@ def check_boba_availability():
                 save_status(False)
             else:
                 print("Sorry, 1/2 boba is currently unavailable.")
-                email_sent = send_email(
-                    "Boba Unavailable Alert",
-                    "The 1/2 boba option is currently unavailable for Pistachio Milk Tea at Teas n' You."
-                )
-                email_was_sent = email_sent
-                print(f"Unavailability notification {'sent' if email_sent else 'failed to send'}")
+                # Check if we haven't already sent an unavailability email
+                last_status = get_last_status()
+                if not last_status["was_unavailable"]:
+                    email_sent = send_email(
+                        "Boba Unavailable Alert",
+                        "The 1/2 boba option is currently unavailable for Pistachio Milk Tea at Teas n' You."
+                    )
+                    email_was_sent = email_sent
+                    print(f"Unavailability notification {'sent' if email_sent else 'failed to send'}")
                 save_status(True)
                 
         except TimeoutException:
