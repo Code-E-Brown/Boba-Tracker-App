@@ -94,25 +94,38 @@ def check_boba_availability():
     
     # Setup Chrome driver with options
     if 'GITHUB_TOKEN' in os.environ:
-        # Running in GitHub Actions - use system chromedriver
+        print("Running in GitHub Actions environment")
         driver = webdriver.Chrome(
             service=Service("/usr/bin/chromedriver"),
             options=chrome_options
         )
     else:
-        # Local environment - use ChromeDriverManager
+        print("Running in local environment")
         driver = webdriver.Chrome(
             service=Service(ChromeDriverManager().install()),
             options=chrome_options
         )
     
     try:
-        # Navigate directly to the pistachio milk tea page
+        print("Navigating to page...")
         driver.get("https://order.toasttab.com/online/teasnyou/item-pistachio-milk-tea_0090e00d-4be2-41a9-972f-dc591121459c")
         
         # Wait for the page to load completely
         wait = WebDriverWait(driver, 10)
+        print("Waiting for page to load...")
         wait.until(lambda driver: driver.execute_script('return document.readyState') == 'complete')
+        print("Page load complete")
+        
+        # Print page title and URL to verify we're on the right page
+        print(f"Current URL: {driver.current_url}")
+        print(f"Page title: {driver.title}")
+        
+        try:
+            # Try to find any element on the page to verify content loaded
+            body = driver.find_element(By.TAG_NAME, "body")
+            print(f"Page content length: {len(body.text)}")
+        except:
+            print("Could not find page body")
         
         # Check if page exists by looking for error indicators
         try:
