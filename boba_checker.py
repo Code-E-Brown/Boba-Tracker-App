@@ -95,9 +95,10 @@ def check_boba_availability():
     # Setup Chrome driver with options
     if 'GITHUB_TOKEN' in os.environ:
         print("Running in GitHub Actions environment")
+        chromedriver_path = os.environ.get('CHROMEDRIVER_PATH', '/usr/bin/chromedriver')
         driver = uc.Chrome(
             options=chrome_options,
-            driver_executable_path="/usr/bin/chromedriver",
+            driver_executable_path=chromedriver_path,
             version_main=122  # Match to the version installed by GitHub Actions
         )
     else:

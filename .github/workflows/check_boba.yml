@@ -22,11 +22,16 @@ jobs:
         wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
         sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
         sudo apt-get update
-        sudo apt-get install -y google-chrome-stable chromium-chromedriver
-        google-chrome --version
-        chromedriver --version
-        which chromedriver
-        which google-chrome
+        sudo apt-get install -y google-chrome-stable
+        
+        # Download and set up ChromeDriver in the workspace
+        CHROME_VERSION=$(google-chrome --version | cut -d ' ' -f 3 | cut -d '.' -f 1)
+        wget https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION} -O chrome_version
+        DRIVER_VERSION=$(cat chrome_version)
+        wget https://chromedriver.storage.googleapis.com/${DRIVER_VERSION}/chromedriver_linux64.zip
+        unzip chromedriver_linux64.zip
+        chmod +x chromedriver
+        echo "CHROMEDRIVER_PATH=$PWD/chromedriver" >> $GITHUB_ENV
     
     - name: Install dependencies
       run: |
