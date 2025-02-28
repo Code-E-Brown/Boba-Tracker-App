@@ -14,6 +14,7 @@ import os
 import json
 from dotenv import load_dotenv, find_dotenv
 import undetected_chromedriver as uc
+from selenium_stealth import stealth
 
 # Load environment variables
 env_path = find_dotenv()
@@ -91,6 +92,7 @@ def check_boba_availability():
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--window-size=1920,1080")
+    chrome_options.add_argument("start-maximized")
     
     # Setup Chrome driver with options
     if 'GITHUB_TOKEN' in os.environ:
@@ -99,13 +101,13 @@ def check_boba_availability():
         driver = uc.Chrome(
             options=chrome_options,
             driver_executable_path=chromedriver_path,
-            version_main=133  # Updated to match the latest Chrome version
+            version_main=133
         )
     else:
         print("Running in local environment")
         driver = uc.Chrome(
             options=chrome_options,
-            version_main=111  # Match this to your local Chrome version
+            version_main=111
         )
     
     try:
