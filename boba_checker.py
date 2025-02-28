@@ -13,6 +13,7 @@ from email.mime.multipart import MIMEMultipart
 import os
 import json
 from dotenv import load_dotenv, find_dotenv
+import undetected_chromedriver as uc
 
 # Load environment variables
 env_path = find_dotenv()
@@ -85,28 +86,25 @@ def check_boba_availability():
     email_was_sent = False  # Track if an email was sent
     
     # Setup Chrome options for headless mode
-    chrome_options = Options()
+    chrome_options = uc.ChromeOptions()
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920,1080")
-    # Add headers to look more like a real browser
-    chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36")
-    chrome_options.add_argument("--accept-language=en-US,en;q=0.9")
     
     # Setup Chrome driver with options
     if 'GITHUB_TOKEN' in os.environ:
         print("Running in GitHub Actions environment")
-        driver = webdriver.Chrome(
-            service=Service("/usr/bin/chromedriver"),
-            options=chrome_options
+        driver = uc.Chrome(
+            options=chrome_options,
+            driver_executable_path="/usr/bin/chromedriver",
+            version_main=122  # Match to the version installed by GitHub Actions
         )
     else:
         print("Running in local environment")
-        driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()),
-            options=chrome_options
+        driver = uc.Chrome(
+            options=chrome_options,
+            version_main=111  # Match this to your local Chrome version
         )
     
     try:
@@ -114,7 +112,7 @@ def check_boba_availability():
         driver.get("https://order.toasttab.com/online/teasnyou/item-pistachio-milk-tea_0090e00d-4be2-41a9-972f-dc591121459c")
         
         # Wait for the page to load completely
-        wait = WebDriverWait(driver, 30)  # Increased timeout to 30 seconds
+        wait = WebDriverWait(driver, 30)
         print("Waiting for page to load...")
         wait.until(lambda driver: driver.execute_script('return document.readyState') == 'complete')
         print("Page load complete")
