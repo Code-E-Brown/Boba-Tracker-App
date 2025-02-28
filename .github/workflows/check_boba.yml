@@ -19,19 +19,27 @@ jobs:
     
     - name: Install Chrome and ChromeDriver
       run: |
+        # Install Chrome
         wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
         sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
         sudo apt-get update
         sudo apt-get install -y google-chrome-stable
         
-        # Download and set up ChromeDriver in the workspace
-        CHROME_VERSION=$(google-chrome --version | cut -d ' ' -f 3 | cut -d '.' -f 1)
-        wget https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION} -O chrome_version
-        DRIVER_VERSION=$(cat chrome_version)
-        wget https://chromedriver.storage.googleapis.com/${DRIVER_VERSION}/chromedriver_linux64.zip
-        unzip chromedriver_linux64.zip
-        chmod +x chromedriver
-        echo "CHROMEDRIVER_PATH=$PWD/chromedriver" >> $GITHUB_ENV
+        # Get Chrome version and download matching ChromeDriver
+        CHROME_VERSION=$(google-chrome --version | cut -d " " -f 3)
+        CHROME_MAJOR_VERSION=$(echo $CHROME_VERSION | cut -d "." -f 1)
+        echo "Chrome version: $CHROME_VERSION"
+        echo "Chrome major version: $CHROME_MAJOR_VERSION"
+        
+        # Download ChromeDriver
+        wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROME_VERSION/linux64/chromedriver-linux64.zip
+        unzip chromedriver-linux64.zip
+        chmod +x chromedriver-linux64/chromedriver
+        
+        # Set path and verify versions
+        echo "CHROMEDRIVER_PATH=$PWD/chromedriver-linux64/chromedriver" >> $GITHUB_ENV
+        $PWD/chromedriver-linux64/chromedriver --version
+        google-chrome --version
     
     - name: Install dependencies
       run: |

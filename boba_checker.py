@@ -99,7 +99,7 @@ def check_boba_availability():
         driver = uc.Chrome(
             options=chrome_options,
             driver_executable_path=chromedriver_path,
-            version_main=122  # Match to the version installed by GitHub Actions
+            version_main=133  # Updated to match the latest Chrome version
         )
     else:
         print("Running in local environment")
