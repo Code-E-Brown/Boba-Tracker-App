@@ -87,7 +87,13 @@ def check_boba_availability():
     # Setup Chrome options for headless mode
     chrome_options = Options()
     chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--window-size=1920,1080")
+    
+    # Check if running in GitHub Actions (Linux)
+    if 'GITHUB_TOKEN' in os.environ:
+        chrome_options.binary_location = "/usr/bin/chromium-browser"
     
     # Setup Chrome driver with options
     driver = webdriver.Chrome(
