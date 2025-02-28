@@ -14,7 +14,6 @@ import os
 import json
 from dotenv import load_dotenv, find_dotenv
 import undetected_chromedriver as uc
-from selenium_stealth import stealth
 
 # Load environment variables
 env_path = find_dotenv()
