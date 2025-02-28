@@ -19,7 +19,12 @@ env_path = find_dotenv()
 load_dotenv(env_path, override=True)
 
 def get_last_status():
-    """Read the last known boba status from file"""
+    """Read the last known boba status from file or environment"""
+    # Check if running in GitHub Actions
+    if 'GITHUB_TOKEN' in os.environ:
+        return {"was_unavailable": os.environ.get('WAS_UNAVAILABLE', 'false').lower() == 'true'}
+    
+    # Local environment - use JSON file
     try:
         with open('boba_status.json', 'r') as f:
             return json.load(f)
@@ -27,7 +32,13 @@ def get_last_status():
         return {"was_unavailable": False}
 
 def save_status(was_unavailable):
-    """Save the current boba status to file"""
+    """Save the current boba status to file or print for GitHub Actions"""
+    # Check if running in GitHub Actions
+    if 'GITHUB_TOKEN' in os.environ:
+        print(f"Would update WAS_UNAVAILABLE to: {was_unavailable}")
+        return
+    
+    # Local environment - save to JSON file
     with open('boba_status.json', 'w') as f:
         json.dump({"was_unavailable": was_unavailable}, f)
 
@@ -131,7 +142,6 @@ def check_boba_availability():
                 input_element.get_attribute("disabled") is not None or 
                 input_element.get_attribute("aria-disabled") == "true"
             )
-            # boba_available = False
             
             if boba_available:
                 print("1/2 Boba is available for Pistachio Milk Tea!")
