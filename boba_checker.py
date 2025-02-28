@@ -91,6 +91,9 @@ def check_boba_availability():
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920,1080")
+    # Add headers to look more like a real browser
+    chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36")
+    chrome_options.add_argument("--accept-language=en-US,en;q=0.9")
     
     # Setup Chrome driver with options
     if 'GITHUB_TOKEN' in os.environ:
@@ -111,7 +114,7 @@ def check_boba_availability():
         driver.get("https://order.toasttab.com/online/teasnyou/item-pistachio-milk-tea_0090e00d-4be2-41a9-972f-dc591121459c")
         
         # Wait for the page to load completely
-        wait = WebDriverWait(driver, 10)
+        wait = WebDriverWait(driver, 30)  # Increased timeout to 30 seconds
         print("Waiting for page to load...")
         wait.until(lambda driver: driver.execute_script('return document.readyState') == 'complete')
         print("Page load complete")
@@ -119,6 +122,18 @@ def check_boba_availability():
         # Print page title and URL to verify we're on the right page
         print(f"Current URL: {driver.current_url}")
         print(f"Page title: {driver.title}")
+        
+        # Wait for Cloudflare challenge to complete
+        time.sleep(5)  # Give Cloudflare some time
+        
+        try:
+            # Wait for a known element that should be on the actual page
+            wait.until(EC.presence_of_element_located((By.CLASS_NAME, "modifierGroups")))
+            print("Main content loaded successfully")
+        except TimeoutException:
+            print("Failed to load main content after Cloudflare challenge")
+            driver.save_screenshot("debug_screenshot.png")  # Save screenshot for debugging
+            raise
         
         try:
             # Try to find any element on the page to verify content loaded
