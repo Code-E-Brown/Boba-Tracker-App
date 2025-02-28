@@ -12,6 +12,14 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
+    # Download previous status file if it exists
+    - name: Download previous status
+      uses: actions/download-artifact@v2
+      continue-on-error: true  # Continue if no previous artifact exists
+      with:
+        name: boba-status
+        path: .
+    
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -61,4 +69,13 @@ jobs:
         export DISPLAY=:99
         python boba_checker.py
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    # Upload the status file for next run
+    - name: Upload status file
+      uses: actions/upload-artifact@v2
+      if: always()  # Upload even if the script fails
+      with:
+        name: boba-status
+        path: boba_status.json
+        retention-days: 1  # Keep for 1 day 
