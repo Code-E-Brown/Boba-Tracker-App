@@ -92,6 +92,7 @@ def check_boba_availability():
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--window-size=1920,1080")
     chrome_options.add_argument("start-maximized")
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     
     # Setup Chrome driver with options
     if 'GITHUB_TOKEN' in os.environ:
@@ -113,18 +114,41 @@ def check_boba_availability():
         print("Navigating to page...")
         driver.get("https://order.toasttab.com/online/teasnyou/item-pistachio-milk-tea_0090e00d-4be2-41a9-972f-dc591121459c")
         
-        # Wait for the page to load completely
+        # Initial wait for page load
         wait = WebDriverWait(driver, 30)
         print("Waiting for page to load...")
         wait.until(lambda driver: driver.execute_script('return document.readyState') == 'complete')
         print("Page load complete")
         
-        # Print page title and URL to verify we're on the right page
+        # Print page info
         print(f"Current URL: {driver.current_url}")
         print(f"Page title: {driver.title}")
         
-        # Wait for Cloudflare challenge to complete
-        time.sleep(5)  # Give Cloudflare some time
+        # Handle Cloudflare
+        max_retries = 3
+        retry_count = 0
+        while retry_count < max_retries:
+            print(f"Attempt {retry_count + 1} to bypass Cloudflare...")
+            
+            # Wait longer for page to load
+            time.sleep(10)
+            
+            # Check if we're still on Cloudflare page
+            if "Just a moment" in driver.title:
+                print("Still on Cloudflare page, retrying...")
+                retry_count += 1
+                if retry_count < max_retries:
+                    # Refresh the page
+                    driver.refresh()
+                    time.sleep(5)
+                continue
+            else:
+                print("Successfully bypassed Cloudflare!")
+                break
+        
+        if retry_count >= max_retries:
+            print("Failed to bypass Cloudflare after maximum retries")
+            return
         
         try:
             # Wait for a known element that should be on the actual page
