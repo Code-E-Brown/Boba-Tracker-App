@@ -89,17 +89,22 @@ def check_boba_availability():
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920,1080")
     
-    # Check if running in GitHub Actions (Linux)
-    if 'GITHUB_TOKEN' in os.environ:
-        chrome_options.binary_location = "/usr/bin/chromium-browser"
-    
     # Setup Chrome driver with options
-    driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=chrome_options
-    )
+    if 'GITHUB_TOKEN' in os.environ:
+        # Running in GitHub Actions - use system chromedriver
+        driver = webdriver.Chrome(
+            service=Service("/usr/bin/chromedriver"),
+            options=chrome_options
+        )
+    else:
+        # Local environment - use ChromeDriverManager
+        driver = webdriver.Chrome(
+            service=Service(ChromeDriverManager().install()),
+            options=chrome_options
+        )
     
     try:
         # Navigate directly to the pistachio milk tea page
