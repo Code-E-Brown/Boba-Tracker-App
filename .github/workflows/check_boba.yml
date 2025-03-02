@@ -79,13 +79,29 @@ jobs:
           const newValue = status.was_unavailable.toString();
           
           try {
-            await github.rest.actions.updateRepoVariable({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              name: 'WAS_UNAVAILABLE',
-              value: newValue
-            });
-            console.log(`Successfully updated WAS_UNAVAILABLE to: ${newValue}`);
+            // Try to create the variable first
+            try {
+              await github.rest.actions.createRepoVariable({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'WAS_UNAVAILABLE',
+                value: newValue
+              });
+              console.log('Created new variable WAS_UNAVAILABLE');
+            } catch (createError) {
+              // If variable already exists, update it
+              if (createError.status !== 409) {  // 409 means it already exists
+                throw createError;
+              }
+              await github.rest.actions.updateRepoVariable({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'WAS_UNAVAILABLE',
+                value: newValue
+              });
+              console.log('Updated existing variable WAS_UNAVAILABLE');
+            }
+            console.log(`New value: ${newValue}`);
           } catch (error) {
-            console.log('Error updating variable:', error);
+            console.log('Error managing variable:', error);
           } 
