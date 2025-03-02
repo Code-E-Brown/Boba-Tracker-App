@@ -55,21 +55,13 @@ jobs:
         echo "WAS_UNAVAILABLE=${{ secrets.WAS_UNAVAILABLE }}" >> .env
     
     - name: Run boba checker
-      id: boba
       run: |
         # Start virtual display
         Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
         export DISPLAY=:99
-        python boba_checker.py > output.txt
-        echo "status=$(cat boba_status.json | jq -r .was_unavailable)" >> $GITHUB_OUTPUT
-
-    - name: Update WAS_UNAVAILABLE secret
-      uses: gliech/create-github-secret-action@v1
-      if: always()
-      with:
-        name: WAS_UNAVAILABLE
-        value: ${{ steps.boba.outputs.status }}
-        pa_token: ${{ secrets.PA_TOKEN }}
+        python boba_checker.py
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
     # Upload the status file for next run
     - name: Upload status file
