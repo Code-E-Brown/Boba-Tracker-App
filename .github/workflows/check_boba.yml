@@ -74,15 +74,13 @@ jobs:
         # Start virtual display
         Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
         export DISPLAY=:99
+        WAS_UNAVAILABLE=${{ vars.WAS_UNAVAILABLE }}
         python boba_checker.py
+        # Update the variable based on the new status
+        if [ -f boba_status.json ]; then
+          NEW_STATUS=$(cat boba_status.json | jq -r .was_unavailable)
+          echo "NEW_STATUS=$NEW_STATUS" >> $GITHUB_ENV
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-    # Upload the status file for next run
-    - name: Upload status file
-      uses: actions/upload-artifact@v4
-      if: always()  # Upload even if the script fails
-      with:
-        name: boba-status
-        path: boba_status.json
-        retention-days: 1  # Keep for 1 day 
+        WAS_UNAVAILABLE: ${{ vars.WAS_UNAVAILABLE }} 
