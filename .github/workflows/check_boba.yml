@@ -20,6 +20,13 @@ jobs:
         name: boba-status
         path: .
     
+    # Create default status file if none exists
+    - name: Create default status file if needed
+      run: |
+        if [ ! -f boba_status.json ]; then
+          echo '{"was_unavailable": false}' > boba_status.json
+        fi
+    
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
