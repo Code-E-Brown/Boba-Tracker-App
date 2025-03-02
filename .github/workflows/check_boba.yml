@@ -72,7 +72,7 @@ jobs:
     - name: Update WAS_UNAVAILABLE variable
       uses: actions/github-script@v7
       with:
-        github-token: ${{ secrets.PAT_TOKEN }}
+        github-token: ${{ secrets.PA_TOKEN }}
         script: |
           const fs = require('fs');
           const status = JSON.parse(fs.readFileSync('boba_status.json', 'utf8'));
