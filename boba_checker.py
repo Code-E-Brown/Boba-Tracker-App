@@ -20,28 +20,15 @@ env_path = find_dotenv()
 load_dotenv(env_path, override=True)
 
 def get_last_status():
-    """Read the last known boba status from file or environment"""
-    # Check if running in GitHub Actions
-    if 'GITHUB_TOKEN' in os.environ:
-        return {"was_unavailable": os.environ.get('WAS_UNAVAILABLE', 'false').lower() == 'true'}
-    
-    # Local environment - use JSON file
-    try:
-        with open('boba_status.json', 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {"was_unavailable": False}
+    """Read the last known boba status from environment"""
+    was_unavailable = os.environ.get('WAS_UNAVAILABLE', 'false').lower() == 'true'
+    print(f"Previous status - was_unavailable: {was_unavailable}")
+    return {"was_unavailable": was_unavailable}
 
 def save_status(was_unavailable):
-    """Save the current boba status to file or print for GitHub Actions"""
-    # Check if running in GitHub Actions
-    if 'GITHUB_TOKEN' in os.environ:
-        print(f"Would update WAS_UNAVAILABLE to: {was_unavailable}")
-        return
-    
-    # Local environment - save to JSON file
-    with open('boba_status.json', 'w') as f:
-        json.dump({"was_unavailable": was_unavailable}, f)
+    """Save the current boba status"""
+    print(f"Saving new status - was_unavailable: {was_unavailable}")
+    # No need to save in GitHub Actions - we'll update the secret in the workflow
 
 def send_email(subject, body):
     """Send email using Gmail SMTP"""

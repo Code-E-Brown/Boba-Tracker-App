@@ -12,21 +12,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
-    # Download previous status file if it exists
-    - name: Download previous status
-      uses: actions/download-artifact@v4
-      continue-on-error: true  # Continue if no previous artifact exists
-      with:
-        name: boba-status
-        path: .
-    
-    # Create default status file if none exists
-    - name: Create default status file if needed
-      run: |
-        if [ ! -f boba_status.json ]; then
-          echo '{"was_unavailable": false}' > boba_status.json
-        fi
-    
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -70,13 +55,21 @@ jobs:
         echo "WAS_UNAVAILABLE=${{ secrets.WAS_UNAVAILABLE }}" >> .env
     
     - name: Run boba checker
+      id: boba
       run: |
         # Start virtual display
         Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
         export DISPLAY=:99
-        python boba_checker.py
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        python boba_checker.py > output.txt
+        echo "status=$(cat boba_status.json | jq -r .was_unavailable)" >> $GITHUB_OUTPUT
+
+    - name: Update WAS_UNAVAILABLE secret
+      uses: gliech/create-github-secret-action@v1
+      if: always()
+      with:
+        name: WAS_UNAVAILABLE
+        value: ${{ steps.boba.outputs.status }}
+        pa_token: ${{ secrets.PA_TOKEN }}
     
     # Upload the status file for next run
     - name: Upload status file
