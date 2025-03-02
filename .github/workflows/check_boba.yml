@@ -59,7 +59,24 @@ jobs:
         # Start virtual display
         Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
         export DISPLAY=:99
+        # Print current status for debugging
+        echo "Current WAS_UNAVAILABLE value: ${{ vars.WAS_UNAVAILABLE }}"
         python boba_checker.py
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        WAS_UNAVAILABLE: ${{ vars.WAS_UNAVAILABLE }} 
+        WAS_UNAVAILABLE: ${{ vars.WAS_UNAVAILABLE }}
+
+    - name: Update WAS_UNAVAILABLE variable
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const status = JSON.parse(fs.readFileSync('boba_status.json', 'utf8'));
+          await core.setOutput('was_unavailable', status.was_unavailable.toString());
+          // Update repository variable
+          await github.rest.actions.updateRepoVariable({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            name: 'WAS_UNAVAILABLE',
+            value: status.was_unavailable.toString()
+          }); 
