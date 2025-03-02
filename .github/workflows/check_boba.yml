@@ -12,21 +12,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
-    # Download previous status file if it exists
-    - name: Download previous status
-      uses: actions/download-artifact@v4
-      continue-on-error: true  # Continue if no previous artifact exists
-      with:
-        name: boba-status
-        path: .
-    
-    # Create default status file if none exists
-    - name: Create default status file if needed
-      run: |
-        if [ ! -f boba_status.json ]; then
-          echo '{"was_unavailable": false}' > boba_status.json
-        fi
-    
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -65,22 +50,16 @@ jobs:
     - name: Create env file
       run: |
         echo "EMAIL_SENDER=${{ secrets.EMAIL_SENDER }}" > .env
-        echo "EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}" >> .env
+        echo "EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}" > .env
         echo "EMAIL_RECEIVER=${{ secrets.EMAIL_RECEIVER }}" >> .env
-        echo "WAS_UNAVAILABLE=${{ secrets.WAS_UNAVAILABLE }}" >> .env
+        echo "WAS_UNAVAILABLE=${{ vars.WAS_UNAVAILABLE }}" >> .env
     
     - name: Run boba checker
       run: |
         # Start virtual display
         Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
         export DISPLAY=:99
-        WAS_UNAVAILABLE=${{ vars.WAS_UNAVAILABLE }}
         python boba_checker.py
-        # Update the variable based on the new status
-        if [ -f boba_status.json ]; then
-          NEW_STATUS=$(cat boba_status.json | jq -r .was_unavailable)
-          echo "NEW_STATUS=$NEW_STATUS" >> $GITHUB_ENV
-        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         WAS_UNAVAILABLE: ${{ vars.WAS_UNAVAILABLE }} 
