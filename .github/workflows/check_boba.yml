@@ -8,17 +8,11 @@ on:
 jobs:
   check-boba:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
     - uses: actions/checkout@v2
-    
-    # Download previous status file if it exists
-    - name: Download previous status
-      uses: actions/download-artifact@v2
-      continue-on-error: true  # Continue if no previous artifact exists
-      with:
-        name: boba-status
-        path: .
     
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -68,14 +62,12 @@ jobs:
         Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
         export DISPLAY=:99
         python boba_checker.py
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
-    # Upload the status file for next run
-    - name: Upload status file
-      uses: actions/upload-artifact@v2
-      if: always()  # Upload even if the script fails
-      with:
-        name: boba-status
-        path: boba_status.json
-        retention-days: 1  # Keep for 1 day 
+    - name: Commit status file
+      if: always()
+      run: |
+        git config --global user.name 'GitHub Action'
+        git config --global user.email 'action@github.com'
+        git add boba_status.json
+        git commit -m "Update boba status" || echo "No changes to commit"
+        git push || echo "No changes to push" 
