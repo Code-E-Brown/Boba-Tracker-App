@@ -214,7 +214,8 @@ def check_boba_availability():
                 if last_status["was_unavailable"]:
                     email_sent = send_email(
                         "Boba Available Again!",
-                        "Good news! The 1/2 boba option is now available for Pistachio Milk Tea at Teas n' You."
+                        "Good news! The 1/2 boba option is now available for Pistachio Milk Tea at Teas n' You.\n\n" +
+                        "Order here: https://order.toasttab.com/online/teasnyou/item-pistachio-milk-tea_0090e00d-4be2-41a9-972f-dc591121459c"
                     )
                     email_was_sent = email_sent
                     print(f"Availability notification {'sent' if email_sent else 'failed to send'}")
@@ -226,7 +227,8 @@ def check_boba_availability():
                 if not last_status["was_unavailable"]:
                     email_sent = send_email(
                         "Boba Unavailable Alert",
-                        "The 1/2 boba option is currently unavailable for Pistachio Milk Tea at Teas n' You."
+                        "The 1/2 boba option is currently unavailable for Pistachio Milk Tea at Teas n' You.\n\n" +
+                        "Check availability here: https://order.toasttab.com/online/teasnyou/item-pistachio-milk-tea_0090e00d-4be2-41a9-972f-dc591121459c"
                     )
                     email_was_sent = email_sent
                     print(f"Unavailability notification {'sent' if email_sent else 'failed to send'}")
