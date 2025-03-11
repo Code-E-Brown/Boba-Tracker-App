@@ -14,6 +14,7 @@ import os
 import json
 from dotenv import load_dotenv, find_dotenv
 import undetected_chromedriver as uc
+import subprocess
 
 # Load environment variables
 env_path = find_dotenv()
@@ -101,8 +102,15 @@ def check_boba_availability():
     if 'GITHUB_TOKEN' in os.environ:
         print("Running in GitHub Actions environment")
         chromedriver_path = os.environ.get('CHROMEDRIVER_PATH', '/usr/bin/chromedriver')
-        chrome_version = int(os.environ.get('CHROME_MAJOR_VERSION', '133'))
-        print(f"Using Chrome version: {chrome_version}")
+        
+        # Get actual Chrome version from the system
+        try:
+            chrome_version_output = subprocess.check_output(['google-chrome', '--version']).decode('utf-8')
+            chrome_version = int(chrome_version_output.split()[2].split('.')[0])  # Get major version number
+            print(f"Detected Chrome version: {chrome_version}")
+        except Exception as e:
+            print(f"Error detecting Chrome version: {e}")
+            chrome_version = None  # Let undetected-chromedriver auto-detect
         
         driver = uc.Chrome(
             options=create_chrome_options(),
