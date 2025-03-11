@@ -211,7 +211,7 @@ def check_boba_availability():
                 input_element.get_attribute("disabled") is not None or 
                 input_element.get_attribute("aria-disabled") == "true"
             )
-            # boba_available = False
+            boba_available = False
             
             if boba_available:
                 print("1/2 Boba is available for Pistachio Milk Tea!")
