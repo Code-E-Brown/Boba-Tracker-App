@@ -74,39 +74,13 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         WAS_UNAVAILABLE: ${{ vars.WAS_UNAVAILABLE }}
 
-    - name: Update WAS_UNAVAILABLE variable
-      uses: actions/github-script@v7
-      with:
-        github-token: ${{ secrets.PA_TOKEN }}
-        script: |
-          const fs = require('fs');
-          const status = JSON.parse(fs.readFileSync('boba_status.json', 'utf8'));
-          const newValue = status.was_unavailable.toString();
-          
-          try {
-            // Try to create the variable first
-            try {
-              await github.rest.actions.createRepoVariable({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: 'WAS_UNAVAILABLE',
-                value: newValue
-              });
-              console.log('Created new variable WAS_UNAVAILABLE');
-            } catch (createError) {
-              // If variable already exists, update it
-              if (createError.status !== 409) {  // 409 means it already exists
-                throw createError;
-              }
-              await github.rest.actions.updateRepoVariable({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: 'WAS_UNAVAILABLE',
-                value: newValue
-              });
-              console.log('Updated existing variable WAS_UNAVAILABLE');
-            }
-            console.log(`New value: ${newValue}`);
-          } catch (error) {
-            console.log('Error managing variable:', error);
-          } 
+    - name: Update status and commit
+      if: success()
+      run: |
+        git config --global user.name 'GitHub Action'
+        git config --global user.email 'action@github.com'
+        if [ -f boba_status.json ]; then
+          git add boba_status.json
+          git commit -m "Update boba status" || echo "No changes to commit"
+          git push || echo "No changes to push"
+        fi 
