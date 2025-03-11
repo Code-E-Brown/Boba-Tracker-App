@@ -82,50 +82,37 @@ def handle_modal(driver):
     except:
         pass
 
+def create_chrome_options():
+    """Create and return fresh Chrome options"""
+    options = uc.ChromeOptions()
+    if 'GITHUB_TOKEN' not in os.environ:  # If running locally
+        options.add_argument("--headless=new")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--window-size=1920,1080")
+    options.add_argument("start-maximized")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    return options
+
 def check_boba_availability():
     email_was_sent = False  # Track if an email was sent
-    
-    # Setup Chrome options for headless mode
-    chrome_options = uc.ChromeOptions()
-    if 'GITHUB_TOKEN' not in os.environ:  # If running locally
-        chrome_options.add_argument("--headless=new")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--window-size=1920,1080")
-    chrome_options.add_argument("start-maximized")
-    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     
     # Setup Chrome driver with options
     if 'GITHUB_TOKEN' in os.environ:
         print("Running in GitHub Actions environment")
         chromedriver_path = os.environ.get('CHROMEDRIVER_PATH', '/usr/bin/chromedriver')
-        try:
-            driver = uc.Chrome(
-                options=chrome_options,
-                driver_executable_path=chromedriver_path,
-                version_main=133  # First try with version 133
-            )
-        except Exception as e:
-            print(f"Failed to initialize with version 133: {str(e)}")
-            try:
-                driver = uc.Chrome(
-                    options=chrome_options,
-                    driver_executable_path=chromedriver_path,
-                    version_main=None  # Let undetected-chromedriver auto-detect version
-                )
-            except Exception as e2:
-                print(f"Failed with auto-detect: {str(e2)}")
-                # One last try with the version from environment
-                chrome_version = int(os.environ.get('CHROME_MAJOR_VERSION', '133'))
-                driver = uc.Chrome(
-                    options=chrome_options,
-                    driver_executable_path=chromedriver_path,
-                    version_main=chrome_version
-                )
+        chrome_version = int(os.environ.get('CHROME_MAJOR_VERSION', '133'))
+        print(f"Using Chrome version: {chrome_version}")
+        
+        driver = uc.Chrome(
+            options=create_chrome_options(),
+            driver_executable_path=chromedriver_path,
+            version_main=chrome_version
+        )
     else:
         print("Running in local environment")
         driver = uc.Chrome(
-            options=chrome_options,
+            options=create_chrome_options(),
             version_main=111
         )
     

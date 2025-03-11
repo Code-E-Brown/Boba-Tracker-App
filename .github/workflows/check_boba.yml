@@ -29,14 +29,18 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y google-chrome-stable xvfb
         
-        # Get Chrome version and download matching ChromeDriver
+        # Get exact Chrome version and download matching ChromeDriver
         CHROME_VERSION=$(google-chrome --version | cut -d " " -f 3)
         CHROME_MAJOR_VERSION=$(echo $CHROME_VERSION | cut -d "." -f 1)
         echo "Chrome version: $CHROME_VERSION"
         echo "Chrome major version: $CHROME_MAJOR_VERSION"
         
-        # Download ChromeDriver
-        wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROME_VERSION/linux64/chromedriver-linux64.zip
+        # Set Chrome version in environment
+        echo "CHROME_VERSION=$CHROME_VERSION" >> $GITHUB_ENV
+        echo "CHROME_MAJOR_VERSION=$CHROME_MAJOR_VERSION" >> $GITHUB_ENV
+        
+        # Download matching ChromeDriver
+        wget -q "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$(curl -s https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_$CHROME_MAJOR_VERSION)/linux64/chromedriver-linux64.zip"
         unzip chromedriver-linux64.zip
         chmod +x chromedriver-linux64/chromedriver
         
