@@ -2,7 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import TimeoutException, ElementNotInteractableException
@@ -101,21 +101,17 @@ def check_boba_availability():
     # Setup Chrome driver with options
     if 'GITHUB_TOKEN' in os.environ:
         print("Running in GitHub Actions environment")
-        chromedriver_path = os.environ.get('CHROMEDRIVER_PATH', '/usr/bin/chromedriver')
+        options = create_chrome_options()
         
-        # Get actual Chrome version from the system
-        try:
-            chrome_version_output = subprocess.check_output(['google-chrome', '--version']).decode('utf-8')
-            chrome_version = int(chrome_version_output.split()[2].split('.')[0])  # Get major version number
-            print(f"Detected Chrome version: {chrome_version}")
-        except Exception as e:
-            print(f"Error detecting Chrome version: {e}")
-            chrome_version = None  # Let undetected-chromedriver auto-detect
+        # Let Selenium Manager handle Chrome and ChromeDriver versions
+        from selenium.webdriver.chrome.service import Service as ChromeService
+        from selenium.webdriver.chrome.options import Options
+        from selenium.webdriver.chrome.service import Service
         
-        driver = uc.Chrome(
-            options=create_chrome_options(),
-            driver_executable_path=chromedriver_path,
-            version_main=chrome_version
+        service = ChromeService()
+        driver = webdriver.Chrome(
+            service=service,
+            options=options
         )
     else:
         print("Running in local environment")
