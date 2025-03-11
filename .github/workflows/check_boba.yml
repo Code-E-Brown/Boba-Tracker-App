@@ -10,11 +10,14 @@ jobs:
   check-boba:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       actions: write
     
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -75,10 +78,9 @@ jobs:
     - name: Update status and commit
       if: success()
       run: |
-        git config --global user.name 'GitHub Action'
-        git config --global user.email 'action@github.com'
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         if [ -f boba_status.json ]; then
           git add boba_status.json
-          git commit -m "Update boba status" || echo "No changes to commit"
-          git push || echo "No changes to push"
+          git diff --staged --quiet || (git commit -m "Update boba status [skip ci]" && git push)
         fi 
