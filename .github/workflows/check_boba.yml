@@ -23,12 +23,11 @@ jobs:
     
     - name: Install Chrome and ChromeDriver
       run: |
-        # Install Chrome Beta (more stable version control)
+        # Install latest Chrome
         wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
         sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
         sudo apt-get update
-        sudo apt-get install -y google-chrome-stable=133.0.6943.0-1 xvfb
-        sudo apt-mark hold google-chrome-stable  # Prevent automatic updates
+        sudo apt-get install -y google-chrome-stable xvfb
         
         # Get Chrome version and verify
         CHROME_VERSION=$(google-chrome --version | cut -d " " -f 3)
@@ -40,8 +39,10 @@ jobs:
         echo "CHROME_VERSION=$CHROME_VERSION" >> $GITHUB_ENV
         echo "CHROME_MAJOR_VERSION=$CHROME_MAJOR_VERSION" >> $GITHUB_ENV
         
-        # Download matching ChromeDriver
-        wget -q "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/133.0.6943.0/linux64/chromedriver-linux64.zip"
+        # Download matching ChromeDriver for the installed Chrome version
+        CHROMEDRIVER_VERSION=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_$CHROME_MAJOR_VERSION")
+        echo "ChromeDriver version: $CHROMEDRIVER_VERSION"
+        wget -q "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip"
         unzip chromedriver-linux64.zip
         chmod +x chromedriver-linux64/chromedriver
         
