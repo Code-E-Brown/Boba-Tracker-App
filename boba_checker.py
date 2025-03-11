@@ -87,7 +87,8 @@ def check_boba_availability():
     
     # Setup Chrome options for headless mode
     chrome_options = uc.ChromeOptions()
-    # chrome_options.add_argument("--headless=new")  # Comment out headless mode
+    if 'GITHUB_TOKEN' not in os.environ:  # If running locally
+        chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--window-size=1920,1080")
@@ -98,11 +99,29 @@ def check_boba_availability():
     if 'GITHUB_TOKEN' in os.environ:
         print("Running in GitHub Actions environment")
         chromedriver_path = os.environ.get('CHROMEDRIVER_PATH', '/usr/bin/chromedriver')
-        driver = uc.Chrome(
-            options=chrome_options,
-            driver_executable_path=chromedriver_path,
-            version_main=133
-        )
+        try:
+            driver = uc.Chrome(
+                options=chrome_options,
+                driver_executable_path=chromedriver_path,
+                version_main=133  # First try with version 133
+            )
+        except Exception as e:
+            print(f"Failed to initialize with version 133: {str(e)}")
+            try:
+                driver = uc.Chrome(
+                    options=chrome_options,
+                    driver_executable_path=chromedriver_path,
+                    version_main=None  # Let undetected-chromedriver auto-detect version
+                )
+            except Exception as e2:
+                print(f"Failed with auto-detect: {str(e2)}")
+                # One last try with the version from environment
+                chrome_version = int(os.environ.get('CHROME_MAJOR_VERSION', '133'))
+                driver = uc.Chrome(
+                    options=chrome_options,
+                    driver_executable_path=chromedriver_path,
+                    version_main=chrome_version
+                )
     else:
         print("Running in local environment")
         driver = uc.Chrome(
